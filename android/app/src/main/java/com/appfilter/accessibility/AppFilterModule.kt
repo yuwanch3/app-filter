@@ -16,7 +16,8 @@ class AppFilterModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
         try { reactApplicationContext.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }); p.resolve(true) }
         catch (e: Exception) { p.reject("ERROR", e.message) }
     }
-    @ReactMethod fun updateKeywords(keywords: ReadableArray, p: Promise) {
+    @ReactMethod
+    fun updateKeywords(keywords: ReadableArray, p: Promise) {
         try { com.appfilter.filter.KeywordFilter().updateKeywords((0 until keywords.size()).map { keywords.getString(it) }); p.resolve(true) }
         catch (e: Exception) { p.reject("ERROR", e.message) }
     }

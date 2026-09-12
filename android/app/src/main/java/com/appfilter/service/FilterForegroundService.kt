@@ -1,5 +1,5 @@
 package com.appfilter.service
-import android.app.PendingIntent; import android.app.Service; import android.content.Intent; import android.os.Build; import android.os.IBinder
+import android.app.PendingIntent; import android.app.Service; import android.content.Intent; import android.os.Build; import android.os.IBNBR
 import androidx.core.app.NotificationCompat
 class FilterForegroundService : Service() {
     companion object { const val CHANNEL_ID = "appfilter_filter_channel"; const val NOTIFICATION_ID = 1001 }

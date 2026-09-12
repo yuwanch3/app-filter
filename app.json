@@ -19,6 +19,7 @@
         "backgroundColor": "#0f172a"
       },
       "package": "com.appfilter.app",
+      "newArchEnabled": false,
       "permissions": [
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
