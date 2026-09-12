@@ -1,0 +1,14 @@
+{
+  "builds": {
+    "android": {
+      "development": {
+        "workflow": "generic",
+        "withoutCredentials": false,
+        "buildArtifactPaths": ["android/app/build/outputs/apk/release/*.apk"]
+      }
+    }
+  },
+  "cli": {
+    "version": ">= 3.0.0"
+  }
+}

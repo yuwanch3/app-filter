@@ -1,0 +1,12 @@
+build/
+.gradle/
+local.properties
+*.iml
+*.hprof
+*.apk
+*.aab
+.env
+node_modules/
+.expo/
+dist/
+*.tsbuildinfo
