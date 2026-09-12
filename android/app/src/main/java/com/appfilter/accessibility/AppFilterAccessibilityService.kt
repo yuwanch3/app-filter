@@ -6,13 +6,10 @@ import android.content.Intent
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.AccessibilityWindowInfo
 import com.appfilter.filter.KeywordFilter
-import com.appfilter.models.UICapture
 import com.appfilter.service.FilterForegroundService
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
-import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -51,20 +48,16 @@ class AppFilterAccessibilityService : AccessibilityService() {
         }
         serviceInfo = info
         isRunning.set(true)
-
         startForegroundService()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (!isRunning.get()) return
-
         val packageName = event.packageName?.toString() ?: return
         if (packageName !in TARGET_PACKAGES) return
-
         val now = System.currentTimeMillis()
         if (now - lastEventTime < DEBOUNCE_MS) return
         lastEventTime = now
-
         processEvent(event, packageName)
     }
 
@@ -105,19 +98,13 @@ class AppFilterAccessibilityService : AccessibilityService() {
     private fun captureUIContent(node: AccessibilityNodeInfo, packageName: String) {
         if (processedNodes.contains(node.viewIdResourceName)) return
         processedNodes.add(node.viewIdResourceName ?: "")
-
-        if (processedNodes.size > 1000) {
-            processedNodes.clear()
-        }
-
+        if (processedNodes.size > 1000) processedNodes.clear()
         val text = node.text?.toString()
         val contentDesc = node.contentDescription?.toString()
         val displayText = text ?: contentDesc ?: ""
-
         if (displayText.isNotEmpty()) {
             checkAndFilterText(displayText, packageName, "ui_element", node)
         }
-
         for (i in 0 until node.childCount) {
             node.getChild(i)?.let { child ->
                 captureUIContent(child, packageName)
@@ -126,12 +113,7 @@ class AppFilterAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun checkAndFilterText(
-        text: String,
-        packageName: String,
-        source: String,
-        node: AccessibilityNodeInfo?
-    ) {
+    private fun checkAndFilterText(text: String, packageName: String, source: String, node: AccessibilityNodeInfo?) {
         if (keywordFilter.matches(text)) {
             val match = keywordFilter.getMatchedKeyword(text) ?: ""
             sendToJS("keyword_match", mapOf(
@@ -146,7 +128,6 @@ class AppFilterAccessibilityService : AccessibilityService() {
                     "height" to (node.boundsInScreen.bottom - node.boundsInScreen.top)
                 ) else null
             ))
-
             node?.let { performHideAction(it) }
         }
     }
@@ -168,16 +149,12 @@ class AppFilterAccessibilityService : AccessibilityService() {
         }
     }
 
-    override fun onInterrupt() {
-        isRunning.set(false)
-    }
-
+    override fun onInterrupt() { isRunning.set(false) }
     override fun onDestroy() {
         isRunning.set(false)
         reactContext = null
         super.onDestroy()
     }
-
     override fun onUnbind(intent: Intent?): Boolean {
         isRunning.set(false)
         return super.onUnbind(intent)
@@ -185,11 +162,8 @@ class AppFilterAccessibilityService : AccessibilityService() {
 
     private fun startForegroundService() {
         val intent = Intent(this, FilterForegroundService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent)
+        else startService(intent)
     }
 
     private fun sendToJS(eventName: String, data: Map<String, Any?>) {

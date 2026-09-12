@@ -1,11 +1,8 @@
 package com.appfilter.accessibility
 
-import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
-import android.view.accessibility.AccessibilityEvent
 import com.facebook.react.bridge.*
-import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class AppFilterModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -16,9 +13,7 @@ class AppFilterModule(reactContext: ReactApplicationContext) :
         reactContext.addLifecycleEventListener(object : LifecycleEventListener {
             override fun onHostResume() {}
             override fun onHostPause() {}
-            override fun onHostDestroy() {
-                accessibilityService = null
-            }
+            override fun onHostDestroy() { accessibilityService = null }
         })
     }
 
@@ -27,15 +22,9 @@ class AppFilterModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun initialize(promise: Promise) {
         try {
-            val activity = currentActivity
-            if (activity != null) {
-                promise.resolve(true)
-            } else {
-                promise.reject("NO_ACTIVITY", "Activity not available")
-            }
-        } catch (e: Exception) {
-            promise.reject("ERROR", e.message)
-        }
+            if (currentActivity != null) promise.resolve(true)
+            else promise.reject("NO_ACTIVITY", "Activity not available")
+        } catch (e: Exception) { promise.reject("ERROR", e.message) }
     }
 
     @ReactMethod
@@ -48,9 +37,7 @@ class AppFilterModule(reactContext: ReactApplicationContext) :
                 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
             ) ?: ""
             promise.resolve(enabledServices.contains(service))
-        } catch (e: Exception) {
-            promise.reject("ERROR", e.message)
-        }
+        } catch (e: Exception) { promise.reject("ERROR", e.message) }
     }
 
     @ReactMethod
@@ -61,26 +48,17 @@ class AppFilterModule(reactContext: ReactApplicationContext) :
             }
             reactApplicationContext.startActivity(intent)
             promise.resolve(true)
-        } catch (e: Exception) {
-            promise.reject("ERROR", e.message)
-        }
+        } catch (e: Exception) { promise.reject("ERROR", e.message) }
     }
 
     @ReactMethod
     fun updateKeywords(keywords: ReadableArray, promise: Promise) {
         try {
-            val keywordList = mutableListOf<String>()
-            for (i in 0 until keywords.size()) {
-                keywordList.add(keywords.getString(i))
-            }
-            accessibilityService?.let { service ->
-                val filter = com.appfilter.filter.KeywordFilter()
-                filter.updateKeywords(keywordList)
-            }
+            com.appfilter.filter.KeywordFilter().updateKeywords(
+                (0 until keywords.size()).map { keywords.getString(it) }
+            )
             promise.resolve(true)
-        } catch (e: Exception) {
-            promise.reject("ERROR", e.message)
-        }
+        } catch (e: Exception) { promise.reject("ERROR", e.message) }
     }
 
     @ReactMethod
@@ -89,21 +67,15 @@ class AppFilterModule(reactContext: ReactApplicationContext) :
             val activity = currentActivity
             if (activity != null) {
                 val intent = Intent(activity, OverlayActivity::class.java).apply {
-                    putExtra("left", left)
-                    putExtra("top", top)
-                    putExtra("width", width)
-                    putExtra("height", height)
+                    putExtra("left", left); putExtra("top", top)
+                    putExtra("width", width); putExtra("height", height)
                     putExtra("packageName", packageName)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 activity.startActivity(intent)
                 promise.resolve(true)
-            } else {
-                promise.reject("NO_ACTIVITY", "Activity not available")
-            }
-        } catch (e: Exception) {
-            promise.reject("ERROR", e.message)
-        }
+            } else promise.reject("NO_ACTIVITY", "Activity not available")
+        } catch (e: Exception) { promise.reject("ERROR", e.message) }
     }
 
     fun setAccessibilityService(service: AppFilterAccessibilityService) {
