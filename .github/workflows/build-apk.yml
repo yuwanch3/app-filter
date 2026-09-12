@@ -40,7 +40,7 @@ jobs:
       - name: Build APK (release)
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon
+          NODE_ENV=production ./gradlew assembleRelease --no-daemon
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
