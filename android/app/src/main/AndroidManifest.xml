@@ -33,31 +33,16 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.appfilter.app"/>
-        <data android:scheme="exp+appfilter"/>
       </intent-filter>
     </activity>
 
-    <activity
-      android:name="com.appfilter.accessibility.OverlayActivity"
-      android:theme="@android:style/Theme.Translucent.NoTitleBar"
-      android:excludeFromRecents="true"
-      android:exported="false" />
+    <activity android:name="com.appfilter.accessibility.OverlayActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:excludeFromRecents="true" android:exported="false" />
 
-    <service
-      android:name="com.appfilter.accessibility.AppFilterAccessibilityService"
-      android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-      android:exported="true">
-      <intent-filter>
-        <action android:name="android.accessibilityservice.AccessibilityService" />
-      </intent-filter>
-      <meta-data
-        android:name="android.accessibilityservice"
-        android:resource="@xml/accessibility_service_config" />
+    <service android:name="com.appfilter.accessibility.AppFilterAccessibilityService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:exported="true">
+      <intent-filter><action android:name="android.accessibilityservice.AccessibilityService" /></intent-filter>
+      <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility_service_config" />
     </service>
 
-    <service
-      android:name="com.appfilter.service.FilterForegroundService"
-      android:foregroundServiceType="specialUse"
-      android:exported="false" />
+    <service android:name="com.appfilter.service.FilterForegroundService" android:foregroundServiceType="specialUse" android:exported="false" />
   </application>
 </manifest>

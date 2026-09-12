@@ -39,8 +39,7 @@
         {
           "enableFTS": true
         }
-      ],
-      "expo-dev-client"
+      ]
     ],
     "extra": {
       "moderationApiEndpoint": "http://localhost:3001/api/moderate",

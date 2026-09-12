@@ -14,7 +14,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AppFilterAccessibilityService : AccessibilityService() {
-
     private var reactContext: ReactContext? = null
     private var isRunning = AtomicBoolean(false)
     private val keywordFilter = KeywordFilter()
@@ -24,20 +23,16 @@ class AppFilterAccessibilityService : AccessibilityService() {
     companion object {
         private const val DEBOUNCE_MS = 200L
         private val TARGET_PACKAGES = setOf(
-            "com.google.android.youtube",
-            "com.instagram.android",
-            "com.zhiliaoapp.musically",
-            "com.twitter.android"
+            "com.google.android.youtube", "com.instagram.android",
+            "com.zhiliaoapp.musically", "com.twitter.android"
         )
     }
 
-    fun setReactContext(context: ReactContext) {
-        this.reactContext = context
-    }
+    fun setReactContext(context: ReactContext) { this.reactContext = context }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        val info = AccessibilityServiceInfo().apply {
+        serviceInfo = AccessibilityServiceInfo().apply {
             eventTypes = AccessibilityEvent.TYPES_ALL_MASK
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
             flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
@@ -46,7 +41,6 @@ class AppFilterAccessibilityService : AccessibilityService() {
                     AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
             notificationTimeout = 100
         }
-        serviceInfo = info
         isRunning.set(true)
         startForegroundService()
     }
@@ -71,25 +65,16 @@ class AppFilterAccessibilityService : AccessibilityService() {
                 root.recycle()
             }
             AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED -> {
-                event.source?.let { source ->
-                    val text = source.text?.toString() ?: ""
-                    if (text.isNotEmpty()) {
-                        checkAndFilterText(text, packageName, "search_input", null)
-                    }
-                    source.recycle()
+                event.source?.let { s ->
+                    s.text?.toString()?.takeIf { it.isNotEmpty() }?.let { checkAndFilterText(it, packageName, "search_input", null) }
+                    s.recycle()
                 }
             }
             AccessibilityEvent.TYPE_VIEW_CLICKED -> {
-                event.source?.let { source ->
-                    val text = source.text?.toString() ?: ""
-                    val contentDesc = source.contentDescription?.toString() ?: ""
-                    if (text.isNotEmpty()) {
-                        checkAndFilterText(text, packageName, "clicked", null)
-                    }
-                    if (contentDesc.isNotEmpty()) {
-                        checkAndFilterText(contentDesc, packageName, "clicked_desc", null)
-                    }
-                    source.recycle()
+                event.source?.let { s ->
+                    s.text?.toString()?.takeIf { it.isNotEmpty() }?.let { checkAndFilterText(it, packageName, "clicked", null) }
+                    s.contentDescription?.toString()?.takeIf { it.isNotEmpty() }?.let { checkAndFilterText(it, packageName, "clicked_desc", null) }
+                    s.recycle()
                 }
             }
         }
@@ -99,34 +84,25 @@ class AppFilterAccessibilityService : AccessibilityService() {
         if (processedNodes.contains(node.viewIdResourceName)) return
         processedNodes.add(node.viewIdResourceName ?: "")
         if (processedNodes.size > 1000) processedNodes.clear()
-        val text = node.text?.toString()
-        val contentDesc = node.contentDescription?.toString()
-        val displayText = text ?: contentDesc ?: ""
-        if (displayText.isNotEmpty()) {
-            checkAndFilterText(displayText, packageName, "ui_element", node)
-        }
+        val text = node.text?.toString() ?: node.contentDescription?.toString() ?: ""
+        if (text.isNotEmpty()) checkAndFilterText(text, packageName, "ui_element", node)
         for (i in 0 until node.childCount) {
             node.getChild(i)?.let { child ->
-                captureUIContent(child, packageName)
-                child.recycle()
+                captureUIContent(child, packageName); child.recycle()
             }
         }
     }
 
     private fun checkAndFilterText(text: String, packageName: String, source: String, node: AccessibilityNodeInfo?) {
         if (keywordFilter.matches(text)) {
-            val match = keywordFilter.getMatchedKeyword(text) ?: ""
             sendToJS("keyword_match", mapOf(
-                "text" to text,
-                "packageName" to packageName,
-                "source" to source,
-                "matchedKeyword" to match,
-                "bounds" to if (node != null) mapOf(
-                    "x" to node.boundsInScreen.left,
-                    "y" to node.boundsInScreen.top,
-                    "width" to (node.boundsInScreen.right - node.boundsInScreen.left),
-                    "height" to (node.boundsInScreen.bottom - node.boundsInScreen.top)
-                ) else null
+                "text" to text, "packageName" to packageName, "source" to source,
+                "matchedKeyword" to keywordFilter.getMatchedKeyword(text) ?: "",
+                "bounds" to node?.let {
+                    mapOf("x" to it.boundsInScreen.left, "y" to it.boundsInScreen.top,
+                        "width" to (it.boundsInScreen.right - it.boundsInScreen.left),
+                        "height" to (it.boundsInScreen.bottom - it.boundsInScreen.top))
+                }
             ))
             node?.let { performHideAction(it) }
         }
@@ -134,31 +110,19 @@ class AppFilterAccessibilityService : AccessibilityService() {
 
     private fun performHideAction(node: AccessibilityNodeInfo) {
         try {
-            val bounds = node.boundsInScreen
-            val overlayIntent = Intent(this, OverlayActivity::class.java).apply {
+            val b = node.boundsInScreen
+            startActivity(Intent(this, OverlayActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                putExtra("left", bounds.left)
-                putExtra("top", bounds.top)
-                putExtra("width", bounds.right - bounds.left)
-                putExtra("height", bounds.bottom - bounds.top)
+                putExtra("left", b.left); putExtra("top", b.top)
+                putExtra("width", b.right - b.left); putExtra("height", b.bottom - b.top)
                 putExtra("packageName", node.packageName?.toString() ?: "")
-            }
-            startActivity(overlayIntent)
-        } catch (e: Exception) {
-            sendToJS("error", mapOf("message" to "Overlay failed: ${e.message}"))
-        }
+            })
+        } catch (e: Exception) { sendToJS("error", mapOf("message" to "Overlay failed: ${e.message}")) }
     }
 
     override fun onInterrupt() { isRunning.set(false) }
-    override fun onDestroy() {
-        isRunning.set(false)
-        reactContext = null
-        super.onDestroy()
-    }
-    override fun onUnbind(intent: Intent?): Boolean {
-        isRunning.set(false)
-        return super.onUnbind(intent)
-    }
+    override fun onDestroy() { isRunning.set(false); reactContext = null; super.onDestroy() }
+    override fun onUnbind(intent: Intent?): Boolean { isRunning.set(false); return super.onUnbind(intent) }
 
     private fun startForegroundService() {
         val intent = Intent(this, FilterForegroundService::class.java)
@@ -169,29 +133,21 @@ class AppFilterAccessibilityService : AccessibilityService() {
     private fun sendToJS(eventName: String, data: Map<String, Any?>) {
         reactContext?.let { ctx ->
             val params = Arguments.createMap()
-            data.forEach { (key, value) ->
-                when (value) {
-                    is String -> params.putString(key, value)
-                    is Int -> params.putInt(key, value)
-                    is Boolean -> params.putBoolean(key, value)
-                    is Double -> params.putDouble(key, value)
+            data.forEach { (k, v) ->
+                when (v) {
+                    is String -> params.putString(k, v)
+                    is Int -> params.putInt(k, v)
+                    is Boolean -> params.putBoolean(k, v)
+                    is Double -> params.putDouble(k, v)
                     is Map<*, *> -> {
-                        val map = Arguments.createMap()
-                        @Suppress("UNCHECKED_CAST")
-                        (value as Map<String, Any>).forEach { (k, v) ->
-                            when (v) {
-                                is String -> map.putString(k, v)
-                                is Int -> map.putInt(k, v)
-                                is Double -> map.putDouble(k, v)
-                                is Boolean -> map.putBoolean(k, v)
-                            }
-                        }
-                        params.putMap(key, map)
+                        val m = Arguments.createMap()
+                        @Suppress("UNCHECKED_CAST") (v as Map<String, Any>).forEach { (k2, v2) ->
+                            when (v2) { is String -> m.putString(k2, v2); is Int -> m.putInt(k2, v2); is Double -> m.putDouble(k2, v2); is Boolean -> m.putBoolean(k2, v2) }
+                        }; params.putMap(k, m)
                     }
                 }
             }
-            ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                .emit("AccessibilityEvent", params)
+            ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit("AccessibilityEvent", params)
         }
     }
 }
