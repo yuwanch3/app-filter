@@ -9,7 +9,9 @@
     "splash": {
       "backgroundColor": "#0f172a"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.appfilter.app"
@@ -44,7 +46,11 @@
     ],
     "extra": {
       "moderationApiEndpoint": "http://localhost:3001/api/moderate",
-      "useLocalModeration": true
-    }
+      "useLocalModeration": true,
+      "eas": {
+        "projectId": "ee284bb7-fd8d-4df9-a220-b4d91514ea06"
+      }
+    },
+    "owner": "misa-misa.org"
   }
 }

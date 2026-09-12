@@ -1,14 +1,21 @@
 {
-  "builds": {
-    "android": {
-      "development": {
-        "workflow": "generic",
-        "withoutCredentials": false,
-        "buildArtifactPaths": ["android/app/build/outputs/apk/release/*.apk"]
-      }
+  "cli": {
+    "version": ">= 21.2.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
     }
   },
-  "cli": {
-    "version": ">= 3.0.0"
+  "submit": {
+    "production": {}
   }
 }
