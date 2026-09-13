@@ -11,7 +11,7 @@ import com.appfilter.service.FilterForegroundService
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import java.util.concurrent.atomic.AtomicBoolean
+import android.graphics.Rect
 
 class AppFilterAccessibilityService : AccessibilityService() {
     private var reactContext: ReactContext? = null
@@ -99,9 +99,11 @@ class AppFilterAccessibilityService : AccessibilityService() {
                 "text" to text, "packageName" to packageName, "source" to source,
                 "matchedKeyword" to keywordFilter.getMatchedKeyword(text) ?: "",
                 "bounds" to node?.let {
-                    mapOf("x" to it.boundsInScreen.left, "y" to it.boundsInScreen.top,
-                        "width" to (it.boundsInScreen.right - it.boundsInScreen.left),
-                        "height" to (it.boundsInScreen.bottom - it.boundsInScreen.top))
+                    val bounds = Rect()
+                    node.getBoundsInScreen(bounds)
+                    mapOf("x" to bounds.left, "y" to bounds.top,
+                        "width" to bounds.right - bounds.left,
+                        "height" to bounds.bottom - bounds.top)
                 }
             ))
             node?.let { performHideAction(it) }
@@ -110,7 +112,9 @@ class AppFilterAccessibilityService : AccessibilityService() {
 
     private fun performHideAction(node: AccessibilityNodeInfo) {
         try {
-            val b = node.boundsInScreen
+            val bounds = Rect()
+            node.getBoundsInScreen(bounds)
+            val b = bounds
             startActivity(Intent(this, OverlayActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 putExtra("left", b.left); putExtra("top", b.top)

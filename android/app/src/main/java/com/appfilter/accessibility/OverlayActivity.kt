@@ -1,5 +1,5 @@
 package com.appfilter.accessibility
-import android.app.Activity; import android.graphics.PixelFormat; import android.os.Build; import android.os.Bundle; import android.view.Gravity; import android.view.WindowManager; import android.widget.TextView
+import android.app.Activity; import android.graphics.PixelFormat; import android.os.Build; import android.os.Bundle; import android.os.Handler; import android.os.Looper; import android.view.Gravity; import android.view.WindowManager; import android.widget.TextView
 class OverlayActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -11,6 +11,6 @@ class OverlayActivity : Activity() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT).apply { gravity = Gravity.TOP or Gravity.START; x = l; y = t }
         wm.addView(TextView(this).apply { text = "🔒 Difilter"; setTextColor(0xFFFFFFFF.toInt()); setBackgroundColor(0xCC1E293B.toInt()); gravity = Gravity.CENTER; textSize = 12f }, p)
-        postDelayed({ finish() }, 3000)
+        Handler(Looper.getMainLooper()).postDelayed({ finish() }, 3000)
     }
 }
