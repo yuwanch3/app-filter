@@ -12,6 +12,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import android.graphics.Rect
+import java.util.concurrent.atomic.AtomicBoolean
 
 class AppFilterAccessibilityService : AccessibilityService() {
     private var reactContext: ReactContext? = null
@@ -97,7 +98,7 @@ class AppFilterAccessibilityService : AccessibilityService() {
         if (keywordFilter.matches(text)) {
             sendToJS("keyword_match", mapOf(
                 "text" to text, "packageName" to packageName, "source" to source,
-                "matchedKeyword" to keywordFilter.getMatchedKeyword(text) ?: "",
+                "matchedKeyword" to (keywordFilter.getMatchedKeyword(text) ?: ""),
                 "bounds" to node?.let {
                     val bounds = Rect()
                     node.getBoundsInScreen(bounds)
