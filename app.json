@@ -27,7 +27,8 @@
         "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.BIND_ACCESSIBILITY_SERVICE"
-      ]
+      ],
+      "versionCode": 2
     },
     "plugins": [
       [
